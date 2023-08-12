@@ -1,0 +1,155 @@
+{% extends 'shop/basic.html' %}
+
+{% block title %}Checkout{% endblock %}
+
+
+
+{% block body %}
+
+<!-- {% if thank %}
+<div class="alert alert-success alert-dismissible fade show" role="alert">
+  <strong>Thanks for ordering with us.</strong>  Your order id is {{id}}. Use it to track your order using our order tracker
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+    <span aria-hidden="true">&times;</span>
+  </button>
+</div>
+<script>
+  localStorage.clear();
+  document.location = "/shop";
+</script>
+{% endif %} -->
+
+
+<div class="container">
+  <div class="col my-4">
+
+    <h2>Step 1 - TKart Express checkout - Review Your Items</h2>
+    <div>
+      <ul class="list-group" id="items">
+
+      </ul>
+      
+    </div>
+    
+      <ul class="list-group my-4">
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <h5>Total Price</h5>
+          <h5>Rs.<span  id="totalprice"></span></h5>
+      </li>
+
+      </ul>
+    
+  </div>
+  <div class="col my-5">
+    <h2> Step 2 - Enter Your Address and Other Details</h2>
+    <form method="post" action="/shop/checkout/"> {% csrf_token %}
+      <input type="hidden" name="itemsJson" id="itemsJson">
+      <input type="hidden" name="amount" id="amount">
+
+      <div class="form-row">
+        <div class="form-group col-md-6">
+          <label for="inputName">Name</label>
+          <input type="text" class="form-control" id="name" name="name" placeholder="Enter Your Name">
+        </div>
+
+        <div class="form-group col-md-6">
+          <label for="inputEmail4">Email</label>
+          <input type="email" class="form-control" id="email" name="email" placeholder="Email">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="inputAddress">Address</label>
+        <input type="text" class="form-control" id="address1" name="address1" placeholder="1234 Main St">
+      </div>
+
+      <div class="form-group">
+        <label for="inputAddress2">Address line 2</label>
+        <input type="text" class="form-control" id="address2" name="address2" placeholder="Apartment, studio, or floor">
+      </div>
+
+      <div class="form-row">
+        <div class="form-group col-md-6">
+          <label for="inputCity">City</label>
+          <input type="text" class="form-control" id="city" name="city" placeholder="Bikaner">
+        </div>
+
+        <div class="form-group col-md-4">
+          <label for="inputState">State</label>
+          <input type="text" class="form-control" id="state" name="state" placeholder="Rajasthan">
+        </div>
+
+        <div class="form-group col-md-2">
+          <label for="inputZip">Zip</label>
+          <input type="text" class="form-control" id="zip_code" name="zip_code" placeholder="334001">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="inputpfhone">Phone No.</label>
+        <input type="tel" class="form-control" id="phone" name="phone" placeholder="123456789">
+      </div>
+  </div>
+
+
+  <button type="submit" class="btn btn-primary">Place Order</button>
+  </form>
+</div>
+</div>
+
+
+
+{% endblock %}
+
+{% block js %}
+
+<script>
+  if (localStorage.getItem('cart') == null) {
+    var cart = {};
+  }
+  else {
+    cart = JSON.parse(localStorage.getItem('cart'));
+  }
+
+  // concole.log(cart)
+  var totalprice = 0;
+  if ($.isEmptyObject(cart)) {
+    //if object is empty
+    mystr = `<p><h4>Your cart is empty, please add some items to your cart before checking out!!</h4></p>`
+    $('#items').append(mystr)
+  }
+  else {
+    for (item in cart) {
+      let name = cart[item][1];
+      let qty = cart[item][0];//scope in a block
+      let itemPrice = cart[item][2]
+      totalprice = totalprice + qty * itemPrice;
+      mystr = `<li class="list-group-item d-flex justify-content-between align-items-center">
+                    ${name}
+                    <span class="badge badge-primary badge-pill">${qty}</span>
+                </li>`
+      $('#items').append(mystr)
+      // .innerhtml krke bhi krr skte hai but this is the shortcut in jquery
+    }
+
+
+  }
+  //speacial feature in es6
+
+  document.getElementById('cart').innerHTML = Object.keys(cart).length;
+  document.getElementById('totalprice').innerHTML = totalprice;
+
+  $('#itemsJson').val(JSON.stringify(cart));
+  
+  // .val function jquery me value set krr deta hai
+var thank = "{{thank}}"
+
+if(thank){
+  alert('Thanks for ordering with us. Your order id is {{id}}. Use it to track your order using our order tracker');
+  localStorage.clear();
+  document.location = "/shop";
+}
+$('#amount').val($('#totalprice').html())
+</script>
+
+{% endblock %}

@@ -1,0 +1,117 @@
+{% extends 'shop/basic.html' %}
+
+{% block title %}TKart Tracker{% endblock %}
+
+
+
+{% block body %}
+
+<div class="container">
+    <div class="col my-4">
+
+        <h2>Enter Your order id and Email address to track your order </h2>
+        <form method="post" id="trackerForm"> {% csrf_token %}
+
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label for="inputName">Order Id</label>
+                    <input type="text" class="form-control" id="orderId" name="orderId" placeholder="Order Id">
+                </div>
+
+                <div class="form-group col-md-6">
+                    <label for="inputEmail4">Email</label>
+                    <input type="email" class="form-control" id="email" name="email" placeholder="Email">
+                </div>
+                <button type="submit" class="btn btn-primary">Track Order</button>
+            </div>
+    </div>
+
+    </form>
+    <div class="col my-4">
+
+        <h2>Your Order Status</h2>
+        <div>
+            <ul class="list-group" id="items">
+                Enter your order id and email and click Track Order to Track your order!!
+            </ul>
+
+        </div>
+        <h2>Your Order Details</h2>
+        <div class="my-4">
+            <ul class="list-group" id="citems">
+                
+            </ul>
+
+        </div>
+    </div>
+</div>
+
+
+
+{% endblock %}
+
+{% block js %}
+<script>
+    $('#trackerForm').submit(function (event) {
+        $('#items').empty();
+        var formData = {
+            'orderId': $('input[name=orderId]').val(),
+            'email': $('input[name=email]').val(),
+            'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val()
+        };
+        $.ajax({
+            type: 'POST',
+            url: '/shop/tracker/',
+            data: formData,
+            encode: true
+        })
+
+            .done(function (data) {
+                $('#citems').empty();
+                console.log(data)             //data vo hai jo views.py bhejega ek json file
+                data = JSON.parse(data);
+                updates = data[0];
+                if (updates.length > 0 & updates != {}) {
+                    //updates  kai sare honge sirf ek nahi hoga
+                    for (i = 0; i < updates.length; i++) {
+                        let text = updates[i]['text'];
+                        let time = updates[i]['time']; // let ka scope in a block
+                        mystr = `<li class="list-group-item d-flex justify-content-between align-items-center">
+                    ${text}
+                    <span class="badge badge-primary badge-pill">${time}</span>
+                </li>`
+                        $('#items').append(mystr)
+                    }
+                    // .innerhtml krke bhi krr skte hai but this is the shortcut in jquery
+                    cart = JSON.parse(data[1]) // now data 1 become json file so it could parse
+                console.log(cart);
+
+                for (item in cart) {
+                    let name = cart[item][1];
+                    let qty = cart[item][0];//scope in a block
+                    mystr = `<li class="list-group-item d-flex justify-content-between align-items-center">
+                    ${name}
+                    <span class="badge badge-primary badge-pill">${qty}</span>
+                </li>`
+                    $('#citems').append(mystr)
+                    // .innerhtml krke bhi krr skte hai but this is the shortcut in jquery
+                }
+                }
+                else {
+
+                    mystr = `<li class="list-group-item d-flex justify-content-between align-items-center">
+                    Sorry!! We are not able to fetch this order : Make sure to type correct order Id and email</li>`
+                    $('#items').append(mystr)
+
+                }
+                //fill in the order details
+                //cart = data[1]; //data 1 is string so we cant parse it 
+                                //
+
+            });
+        event.preventDefault();          //form ka default behavior to relode ko rokta hai
+
+    });
+</script>
+
+{% endblock %}
